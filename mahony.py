@@ -71,7 +71,7 @@ __repo__ = "https://github.com/gamblor21/CircuitPython_AHRS.git"
 # AHRS algorithm update
 
 
-class Mahony(object):
+class Mahony():
     """AHRS Mahony algorithm.
     """
 
@@ -119,7 +119,7 @@ class Mahony(object):
         # Use IMU algorithm if magnetometer measurement invalid
         # (avoids NaN in magnetometer normalisation)
         if (mx == 0.0) and (my == 0.0) and (mz == 0.0):
-            update_IMU(gx, gy, gz, ax, ay, az)
+            self.update_IMU(gx, gy, gz, ax, ay, az)
             return
 
         # Convert gyroscope degrees/sec to radians/sec
@@ -228,6 +228,9 @@ class Mahony(object):
     # IMU algorithm update
 
     def update_IMU(self, gx, gy, gz, ax, ay, az):
+        """
+        Called is was have no mag reading (internal use)
+        """
         recipNorm = 0
         halfvx = halfvy = halfvz = 0
         halfex = halfey = halfez = 0
@@ -264,9 +267,9 @@ class Mahony(object):
                 self.integralFBx += self.twoKi * halfex * self.invSampleFreq
                 self.integralFBy += self.twoKi * halfey * self.invSampleFreq
                 self.integralFBz += self.twoKi * halfez * self.invSampleFreq
-                gx += integralFBx  # apply integral feedback
-                gy += integralFBy
-                gz += integralFBz
+                gx += self.integralFBx  # apply integral feedback
+                gy += self.integralFBy
+                gz += self.integralFBz
             else:
                 self.integralFBx = 0.0  # prevent integral windup
                 self.integralFBy = 0.0
@@ -303,6 +306,9 @@ class Mahony(object):
         self._anglesComputed = False
 
     def compute_angles(self):
+        """
+        Compute all the angles if there have been new samples (internal use)
+        """
         self._roll = math.atan2(
             self.q0 * self.q1 + self.q2 * self.q3,
             0.5 - self.q1 * self.q1 - self.q2 * self.q2,
