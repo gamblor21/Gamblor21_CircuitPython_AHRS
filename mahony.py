@@ -49,7 +49,7 @@ Implementation Notes
 
 **Hardware:**
 
-    `Any 9DOF sensor`_
+    Any 9DOF sensor
 
 **Software and Dependencies:**
 
