@@ -26,7 +26,7 @@ by aircraft.
 
 Dependencies
 =============
-This driver depends on:
+This library depends on:
 
 * `Adafruit CircuitPython <https://github.com/adafruit/circuitpython>`_
 
@@ -67,7 +67,14 @@ To install in a virtual environment in your current project:
 Usage Example
 =============
 
-.. todo:: Add a quick, simple example. It and other examples should live in the examples folder and be included in docs/examples.rst.
+Create the filter, set the parameters and start feeding it sensor data
+
+.. code-block:: shell
+
+	filter = mahony.Mahony(Kp, Ki, sample_frequency)
+	
+	while True:
+		filter.update(gx, gy, gz, ax, ay, az, mx, my, mz)
 
 Contributing
 ============
