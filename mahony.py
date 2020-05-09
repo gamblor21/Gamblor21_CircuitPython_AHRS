@@ -71,7 +71,7 @@ __repo__ = "https://github.com/gamblor21/CircuitPython_AHRS.git"
 # AHRS algorithm update
 
 
-class Mahony():
+class Mahony:
     """AHRS Mahony algorithm.
     """
 
