@@ -1,4 +1,4 @@
-#The MIT License (MIT)
+# The MIT License (MIT)
 #
 # Copyright (c) 2020 Mark Komus
 #
@@ -64,17 +64,18 @@ import math
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/gamblor21/CircuitPython_AHRS.git"
 
-#============================================================================================
+# ============================================================================================
 # Functions
 
-#-------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
 # AHRS algorithm update
+
 
 class Mahony(object):
     """AHRS Mahony algorithm.
     """
-    
-    def __init__(self, Kp = 0.5, Ki = 0.0, sample_freq = 100):
+
+    def __init__(self, Kp=0.5, Ki=0.0, sample_freq=100):
         self._Kp = Kp
         self._Ki = Ki
         self.twoKp = 2.0 * Kp  # 2 * proportional gain (Kp)
@@ -86,7 +87,7 @@ class Mahony(object):
         self.integralFBx = 0.0
         self.integralFBy = 0.0
         self.integralFBz = 0.0
-        
+
         self._sample_freq = sample_freq
         self.invSampleFreq = 1.0 / self.sample_freq
 
@@ -143,21 +144,27 @@ class Mahony(object):
 
             # Auxiliary variables to avoid repeated arithmetic
             q0q0 = self.q0 * self.q0
-            q0q1  = self.q0 * self.q1
-            q0q2  = self.q0 * self.q2
-            q0q3  = self.q0 * self.q3
-            q1q1  = self.q1  * self.q1
-            q1q2  = self.q1  * self.q2
-            q1q3  = self.q1  * self.q3
-            q2q2  = self.q2  * self.q2
-            q2q3  = self.q2  * self.q3
-            q3q3  = self.q3  * self.q3
+            q0q1 = self.q0 * self.q1
+            q0q2 = self.q0 * self.q2
+            q0q3 = self.q0 * self.q3
+            q1q1 = self.q1 * self.q1
+            q1q2 = self.q1 * self.q2
+            q1q3 = self.q1 * self.q3
+            q2q2 = self.q2 * self.q2
+            q2q3 = self.q2 * self.q3
+            q3q3 = self.q3 * self.q3
 
             # Reference direction of Earth's magnetic field
-            hx = 2.0 * (mx * (0.5 - q2q2 - q3q3) + my * (q1q2 - q0q3) + mz * (q1q3 + q0q2))
-            hy = 2.0 * (mx * (q1q2 + q0q3) + my * (0.5 - q1q1 - q3q3) + mz * (q2q3 - q0q1))
+            hx = 2.0 * (
+                mx * (0.5 - q2q2 - q3q3) + my * (q1q2 - q0q3) + mz * (q1q3 + q0q2)
+            )
+            hy = 2.0 * (
+                mx * (q1q2 + q0q3) + my * (0.5 - q1q1 - q3q3) + mz * (q2q3 - q0q1)
+            )
             bx = math.sqrt(hx * hx + hy * hy)
-            bz = 2.0 * (mx * (q1q3 - q0q2) + my * (q2q3 + q0q1) + mz * (0.5 - q1q1 - q2q2))
+            bz = 2.0 * (
+                mx * (q1q3 - q0q2) + my * (q2q3 + q0q1) + mz * (0.5 - q1q1 - q2q2)
+            )
 
             # Estimated direction of gravity and magnetic field
             halfvx = q1q3 - q0q2
@@ -193,33 +200,38 @@ class Mahony(object):
             gz += self.twoKp * halfez
 
         # Integrate rate of change of quaternion
-        gx *= (0.5 * self.invSampleFreq)  # pre-multiply common factors
-        gy *= (0.5 * self.invSampleFreq)
-        gz *= (0.5 * self.invSampleFreq)
+        gx *= 0.5 * self.invSampleFreq  # pre-multiply common factors
+        gy *= 0.5 * self.invSampleFreq
+        gz *= 0.5 * self.invSampleFreq
         qa = self.q0
         qb = self.q1
         qc = self.q2
-        self.q0 += (-qb * gx - qc * gy - self.q3 * gz)
-        self.q1 += (qa * gx + qc * gz - self.q3 * gy)
-        self.q2 += (qa * gy - qb * gz + self.q3 * gx)
-        self.q3 += (qa * gz + qb * gy - qc * gx)
+        self.q0 += -qb * gx - qc * gy - self.q3 * gz
+        self.q1 += qa * gx + qc * gz - self.q3 * gy
+        self.q2 += qa * gy - qb * gz + self.q3 * gx
+        self.q3 += qa * gz + qb * gy - qc * gx
 
         # Normalise quaternion
-        recipNorm = self._inv_sqrt(self.q0 * self.q0 + self.q1  * self.q1  + self.q2  * self.q2  + self.q3  * self.q3 )
+        recipNorm = self._inv_sqrt(
+            self.q0 * self.q0
+            + self.q1 * self.q1
+            + self.q2 * self.q2
+            + self.q3 * self.q3
+        )
         self.q0 *= recipNorm
-        self.q1  *= recipNorm
-        self.q2  *= recipNorm
-        self.q3  *= recipNorm
+        self.q1 *= recipNorm
+        self.q2 *= recipNorm
+        self.q3 *= recipNorm
         self._anglesComputed = False
 
-#-------------------------------------------------------------------------------------------
-# IMU algorithm update
+    # -------------------------------------------------------------------------------------------
+    # IMU algorithm update
 
     def update_IMU(self, gx, gy, gz, ax, ay, az):
         recipNorm = 0
-        halfvx = halfvy = halfvz =0
-        halfex = halfey = halfez =0
-        qa = qb = qc =0
+        halfvx = halfvy = halfvz = 0
+        halfex = halfey = halfez = 0
+        qa = qb = qc = 0
 
         # Convert gyroscope degrees/sec to radians/sec
         gx *= 0.0174533
@@ -236,15 +248,15 @@ class Mahony(object):
             az *= recipNorm
 
             # Estimated direction of gravity
-            halfvx = self.q1  * self.q3  - self.q0 * self.q2
-            halfvy = self.q0 * self.q1  + self.q2  * self.q3
-            halfvz = self.q0 * self.q0 - 0.5 + self.q3  * self.q3
+            halfvx = self.q1 * self.q3 - self.q0 * self.q2
+            halfvy = self.q0 * self.q1 + self.q2 * self.q3
+            halfvz = self.q0 * self.q0 - 0.5 + self.q3 * self.q3
 
             # Error is sum of cross product between estimated
             # and measured direction of gravity
-            halfex = (ay * halfvz - az * halfvy)
-            halfey = (az * halfvx - ax * halfvz)
-            halfez = (ax * halfvy - ay * halfvx)
+            halfex = ay * halfvz - az * halfvy
+            halfey = az * halfvx - ax * halfvz
+            halfez = ax * halfvy - ay * halfvx
 
             # Compute and apply integral feedback if enabled
             if self.twoKi > 0.0:
@@ -266,29 +278,40 @@ class Mahony(object):
             gz += self.twoKp * halfez
 
         # Integrate rate of change of quaternion
-        gx *= (0.5 * self.invSampleFreq)  # pre-multiply common factors
-        gy *= (0.5 * self.invSampleFreq)
-        gz *= (0.5 * self.invSampleFreq)
+        gx *= 0.5 * self.invSampleFreq  # pre-multiply common factors
+        gy *= 0.5 * self.invSampleFreq
+        gz *= 0.5 * self.invSampleFreq
         qa = self.q0
         qb = self.q1
         qc = self.q2
-        self.q0 += (-qb * gx - qc * gy - self.q3  * gz)
-        self.q1  += (qa * gx + qc * gz - self.q3  * gy)
-        self.q2  += (qa * gy - qb * gz + self.q3  * gx)
-        self.q3  += (qa * gz + qb * gy - qc * gx)
+        self.q0 += -qb * gx - qc * gy - self.q3 * gz
+        self.q1 += qa * gx + qc * gz - self.q3 * gy
+        self.q2 += qa * gy - qb * gz + self.q3 * gx
+        self.q3 += qa * gz + qb * gy - qc * gx
 
         # Normalise quaternion
-        recipNorm = self._inv_sqrt(self.q0 * self.q0 + self.q1  * self.q1  + self.q2  * self.q2  + self.q3  * self.q3 )
+        recipNorm = self._inv_sqrt(
+            self.q0 * self.q0
+            + self.q1 * self.q1
+            + self.q2 * self.q2
+            + self.q3 * self.q3
+        )
         self.q0 *= recipNorm
-        self.q1  *= recipNorm
-        self.q2  *= recipNorm
-        self.q3  *= recipNorm
+        self.q1 *= recipNorm
+        self.q2 *= recipNorm
+        self.q3 *= recipNorm
         self._anglesComputed = False
 
     def compute_angles(self):
-        self._roll = math.atan2(self.q0 * self.q1  + self.q2  * self.q3 , 0.5 - self.q1  * self.q1  - self.q2  * self.q2 )
-        self._pitch = math.asin(-2.0 * (self.q1  * self.q3 - self.q0 * self.q2))
-        self._yaw = math.atan2(self.q1 * self.q2 + self.q0 * self.q3, 0.5 - self.q2 * self.q2 - self.q3 * self.q3)
+        self._roll = math.atan2(
+            self.q0 * self.q1 + self.q2 * self.q3,
+            0.5 - self.q1 * self.q1 - self.q2 * self.q2,
+        )
+        self._pitch = math.asin(-2.0 * (self.q1 * self.q3 - self.q0 * self.q2))
+        self._yaw = math.atan2(
+            self.q1 * self.q2 + self.q0 * self.q3,
+            0.5 - self.q2 * self.q2 - self.q3 * self.q3,
+        )
         self._anglesComputed = True
 
     @property
@@ -299,7 +322,7 @@ class Mahony(object):
         if not self._anglesComputed:
             self.compute_angles()
         return self._yaw
-        
+
     @property
     def pitch(self):
         """
@@ -308,7 +331,7 @@ class Mahony(object):
         if not self._anglesComputed:
             self.compute_angles()
         return self._pitch
-        
+
     @property
     def roll(self):
         """
@@ -317,7 +340,7 @@ class Mahony(object):
         if not self._anglesComputed:
             self.compute_angles()
         return self._roll
-        
+
     @property
     def Kp(self):
         """The current Kp value (Proportional gain)."""
@@ -335,7 +358,7 @@ class Mahony(object):
     @Ki.setter
     def Ki(self, value):
         self._Ki = value
-        
+
     @property
     def sample_freq(self):
         """The current sample frequency value in Hertz."""

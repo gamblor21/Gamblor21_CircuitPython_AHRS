@@ -14,6 +14,7 @@ import adafruit_lsm9ds1
 MAG_MIN = [-0.5764, 0.0097, -0.5362]
 MAG_MAX = [0.4725, 0.9919, 0.4743]
 
+
 def map_range(x, in_min, in_max, out_min, out_max):
     """
     Maps a number from one range to another.
@@ -25,6 +26,7 @@ def map_range(x, in_min, in_max, out_min, out_max):
         return max(min(mapped, out_max), out_min)
 
     return min(max(mapped, out_max), out_min)
+
 
 m = mahony.mahony()
 m.twoKp = 2 * 25
@@ -66,8 +68,15 @@ while True:
 
     if time.monotonic() > lastPrint + 0.1:
         m.computeAngles()
-        print("Orientation: ", m.yaw*57.29578+180, ", ", m.pitch*57.29578,", ", m.roll*57.29578)
+        print(
+            "Orientation: ",
+            m.yaw * 57.29578 + 180,
+            ", ",
+            m.pitch * 57.29578,
+            ", ",
+            m.roll * 57.29578,
+        )
         print("Quaternion: ", m.q0, ", ", m.q1, ", ", m.q2, ", ", m.q3)
-        #print("Count: ", count)
+        # print("Count: ", count)
         lastPrint = time.monotonic()
         count = 0
