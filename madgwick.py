@@ -59,6 +59,7 @@ Implementation Notes
 # imports
 import math
 
+
 class Madgwick:
     """AHRS Madgwick algorithm.
     """
