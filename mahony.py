@@ -355,7 +355,7 @@ class Mahony:
     @Kp.setter
     def Kp(self, value):
         self._Kp = value
-        self.twoKp = 2.0 * Kp
+        self.twoKp = 2.0 * self._Kp
 
     @property
     def Ki(self):
@@ -365,7 +365,7 @@ class Mahony:
     @Ki.setter
     def Ki(self, value):
         self._Ki = value
-        self.twoKi = 2.0 * Ki
+        self.twoKi = 2.0 * self._Ki
 
     @property
     def sample_freq(self):
