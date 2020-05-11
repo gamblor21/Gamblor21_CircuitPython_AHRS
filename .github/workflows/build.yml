@@ -48,7 +48,8 @@ jobs:
         black --check --target-version=py35 .
     - name: PyLint
       run: |
-        pylint mahony.py
+        pylint AHRS/mahony.py
+        pylint AHRS/madgwick.py
     - name: Build assets
       run: circuitpython-build-bundles --filename_prefix ${{ steps.repo-name.outputs.repo-name }} --library_location .
     - name: Build docs
