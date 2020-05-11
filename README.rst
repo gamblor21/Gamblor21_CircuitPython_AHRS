@@ -47,6 +47,16 @@ Create the filter, set the parameters and start feeding it sensor data
 	while True:
 		filter.update(gx, gy, gz, ax, ay, az, mx, my, mz)
 
+Caution
+========
+The calculations are very processor intensive. I have tested this on an Adafruit Feather M4 Express.
+Mahony was able to do about 300 samples/sec
+Madgwick was only able to about 15 samples/sec
+
+Also be careful which values you feed the filter and the orientation of your sensor.
+I turned the gryoscope/accelerometer off to make sure magnetic fields were correct and then
+turned on only the gyroscope/accelerometer to ensure they were correct.
+
 Contributing
 ============
 
