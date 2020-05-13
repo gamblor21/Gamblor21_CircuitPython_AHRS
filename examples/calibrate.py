@@ -15,10 +15,10 @@
 ##
 
 import time
-import math
 import board
 import busio
 import adafruit_lsm9ds1
+
 
 def map_range(x, in_min, in_max, out_min, out_max):
     """
@@ -31,6 +31,7 @@ def map_range(x, in_min, in_max, out_min, out_max):
         return max(min(mapped, out_max), out_min)
 
     return min(max(mapped, out_max), out_min)
+
 
 def calibrate():
     """
@@ -67,7 +68,7 @@ def calibrate():
         zavg += gz
         countavg += 1
 
-        if (time.monotonic() - lastDisplayTime >= 3):
+        if time.monotonic() - lastDisplayTime >= 3:
             print("Uncalibrated:", x, y, z)
             cal_x = map_range(x, MAG_MIN[0], MAG_MAX[0], -1, 1)
             cal_y = map_range(y, MAG_MIN[1], MAG_MAX[1], -1, 1)
