@@ -1,11 +1,12 @@
 ##
-## My own test file, quick and dirty to see if the algorithm worked
+## This test file has calibration values for my device
+## Anyone else will have to calibrate and set their own values
+##
 ## Only calibrates for the gryo and hardiron offsets
 ## Set to run on the Adafruit LSM9DS1 over I2C cause that is what I have
 ##
 
 import mahony
-
 import board
 import busio
 import time
@@ -14,7 +15,7 @@ import adafruit_lsm9ds1
 MAG_MIN = [-0.5764, 0.0097, -0.5362]
 MAG_MAX = [0.4725, 0.9919, 0.4743]
 
-
+## Used to calibrate the magenetic sensor
 def map_range(x, in_min, in_max, out_min, out_max):
     """
     Maps a number from one range to another.
@@ -28,55 +29,57 @@ def map_range(x, in_min, in_max, out_min, out_max):
     return min(max(mapped, out_max), out_min)
 
 
-m = mahony.mahony()
-m.twoKp = 2 * 25
-m.twoKi = 2 * 0
-print(m.twoKp)
-print(m.twoKi)
+## create the filter
+filter = mahony.Mahony(50, 5, 100)
 
-sensor = adafruit_lsm9ds1.LSM9DS1_I2C(board.I2C())
-# first values always seem off so discard them and wait a second
-mx, my, mz = sensor.magnetic
-gx, gy, gz = sensor.gyro
-ax, ay, az = sensor.acceleration
-time.sleep(0.5)
+# create the sensor
+i2c = busio.I2C(board.A3, board.A2)
+sensor = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
 
-count = 0
-lastPrint = time.monotonic()
-timestamp = time.monotonic_ns()
+count = 0   # used to count how often we are feeding the filter
+lastPrint = time.monotonic()    # last time we printed the yaw/pitch/roll values
+timestamp = time.monotonic_ns() # used to tune the frequency to approx 100 Hz
 
 while True:
+    # on an Feather M4 approx time to wait between readings
     if (time.monotonic_ns() - timestamp) > 6500000:
+
+        # read the magenetic sensor
         mx, my, mz = sensor.magnetic
+
         # adjust for magnetic calibration - hardiron only
+        # calibration varies per device and physical location
         mx = map_range(mx, MAG_MIN[0], MAG_MAX[0], -1, 1)
         my = map_range(my, MAG_MIN[1], MAG_MAX[1], -1, 1)
         mz = map_range(mz, MAG_MIN[2], MAG_MAX[2], -1, 1)
 
+        # read the gyroscope
         gx, gy, gz = sensor.gyro
         # adjust for my gyro calibration values
+        # calibration varies per device and physical location
         gx -= 1.1250
         gy -= 3.8732
         gz += 1.2834
 
+        # read the accelerometer
         ax, ay, az = sensor.acceleration
 
-        m.update(gx, gy, gz, ax, ay, az, mx, my, mz)
+        # update the filter with the values
+        # gz and my are negative based on my installation
+        filter.update(gx, gy, -gz, ax, ay, az, mx, -my, mz)
 
         count += 1
         timestamp = time.monotonic_ns()
 
+    # every 0.1 seconds print the filter values
     if time.monotonic() > lastPrint + 0.1:
-        m.computeAngles()
-        print(
-            "Orientation: ",
-            m.yaw * 57.29578 + 180,
-            ", ",
-            m.pitch * 57.29578,
-            ", ",
-            m.roll * 57.29578,
-        )
-        print("Quaternion: ", m.q0, ", ", m.q1, ", ", m.q2, ", ", m.q3)
-        # print("Count: ", count)
+        # filter values are in radians/sec multiply by 57.20578 to get degrees/sec
+        yaw = filter.yaw*57.20578
+        if (yaw < 0):   # adjust yaw to be between 0 and 360
+            yaw += 360
+        print("Orientation: ", yaw, ", ", filter.pitch*57.29578,", ", filter.roll*57.29578)
+        print("Quaternion: ", filter.q0, ", ", filter.q1, ", ", filter.q2, ", ", filter.q3)
+
+        #print("Count: ", count)    # optionally print out frequency
+        count = 0   # reset count
         lastPrint = time.monotonic()
-        count = 0
