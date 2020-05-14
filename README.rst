@@ -23,6 +23,7 @@ This library contains right now one alogrithm for AHRS - Attitude and Heading Re
 It is used to combine multiple sensor values to give a heading, pitch and roll value such as used
 by aircraft.
 
+See the `Wiki <https://github.com/gamblor21/CircuitPython_AHRS/wiki>`_ for a more complete description.
 
 Dependencies
 =============
